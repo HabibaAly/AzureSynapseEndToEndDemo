@@ -4,8 +4,7 @@
 	"properties": {
 		"parameters": {
 			"StorageWithSaSUrl": {
-				"type": "string",
-				"defaultValue": "cmclake"
+				"type": "string"
 			}
 		},
 		"annotations": [],
