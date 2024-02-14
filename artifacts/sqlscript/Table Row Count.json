@@ -7,8 +7,8 @@
 				"language": "sql"
 			},
 			"currentConnection": {
-				"databaseName": "synapsee2edw",
-				"poolName": "synapsee2edw"
+				"databaseName": "cmcsql",
+				"poolName": "cmcsql"
 			},
 			"resultLimit": 5000
 		},
