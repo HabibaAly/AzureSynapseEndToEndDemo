@@ -2979,6 +2979,44 @@
 			"dependsOn": []
 		},
 		{
+			"name": "[concat(parameters('workspaceName'), '/Observation Table Creation')]",
+			"type": "Microsoft.Synapse/workspaces/kqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "// Create Table \n.create table ObservationsTable (Observation_id: guid, resourceType: string, issued: datetime, status: string, patient_id_reference: guid, encounter_id_reference: guid, effectiveDateTime: datetime , valueQuantity_code: string, valueQuantity_system: string, valueQuantity_unit: string, valueQuantity_value: real, valueString: string)",
+					"metadata": {
+						"language": "kql"
+					},
+					"currentConnection": {
+						"poolName": "adxpoolhealthcare",
+						"databaseName": "ObservationData"
+					}
+				},
+				"type": "KqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
+			"name": "[concat(parameters('workspaceName'), '/Observations Analytics w KQL')]",
+			"type": "Microsoft.Synapse/workspaces/kqlscripts",
+			"apiVersion": "2019-06-01-preview",
+			"properties": {
+				"content": {
+					"query": "// a. Quick preview of data\nObservationCurated\n| take 100 \n\n// b. Total number of observations \nObservationCurated\n| count \n\n// c. Observations min and max date\nObservationCurated\n| summarize min(issued), max(issued)\n\n// d. Summarizes the count of observations by grouping them into daily intervals based on the issued date. \nObservationCurated\n| summarize count() by bin(issued, 1d)\n\n// e. Visualize timeseries chart\nObservationCurated\n| where issued between (datetime(1910-07-15T12:49:47.219Z)..datetime(2021-06-20T11:41:23.934Z))\n| make-series observationscount=count() on issued from datetime(1910-07-15T12:49:47.219Z) to datetime(2021-06-20T11:41:23.934Z) step 30d\n| render timechart \n\n// f. Trimming dataset to analyze daily observations during a relatively normal time period (8 years between 2011 and 2019)\nObservationCurated\n| where issued between (datetime(2011-08-05 00:00:00.0)..datetime(2019-01-01 00:00:00.0))\n| make-series observationscount=count() on issued from datetime(2011-08-05 00:00:00.0) to datetime(2019-01-01 00:00:00.0) step 1d\n| render timechart \n\n// g. We are now identifying anomalies between these 8 years (2011 and 2019) using the timeseries chart developed in the previous step.\nObservationCurated\n| where issued between (datetime(2011-08-05 00:00:00.0)..datetime(2019-01-01 00:00:00.0))\n| make-series observationscount=count() on issued from datetime(2011-08-05 00:00:00.0) to datetime(2019-01-01 00:00:00.0) step 1d\n| extend anomalies = series_decompose_anomalies(observationscount, 1.5)\n| render anomalychart with(anomalycolumns=anomalies, title='Anomalies for daily medical observations during 8 years')\n\n// h. List Anomalies\nObservationCurated\n| make-series observationscount=count() on issued from datetime(2011-08-05 00:00:00.0) to datetime(2019-01-01 00:00:00.0) step 1d\n| extend anomalies = series_decompose_anomalies(observationscount, 1.5)\n| mv-expand observationscount, anomalies, issued\n| where toint(anomalies) <> 0\n| sort by todatetime(issued)\n\n// i. Separate anomaly properties and use query to create power BI report\nObservationCurated\n| make-series observationscount=count() on issued from datetime(2011-08-05 00:00:00.0) to datetime(2019-01-01 00:00:00.0) step 1d\n| extend (anomalies, score, baseline) = series_decompose_anomalies(observationscount, 1.5)\n| mv-expand anomalies, issued, observationscount, score, baseline \n| project anomalies = iff(toint(anomalies) == 0, int(null),toint(anomalies)), issued, observationscount, score, baseline\n\n\n\n",
+					"metadata": {
+						"language": "kql"
+					},
+					"currentConnection": {
+						"poolName": "adxpoolhealthcare",
+						"databaseName": "ObservationData"
+					}
+				},
+				"type": "KqlQuery"
+			},
+			"dependsOn": []
+		},
+		{
 			"name": "[concat(parameters('workspaceName'), '/ClaimParquetFlatten_Large')]",
 			"type": "Microsoft.Synapse/workspaces/notebooks",
 			"apiVersion": "2019-06-01-preview",
