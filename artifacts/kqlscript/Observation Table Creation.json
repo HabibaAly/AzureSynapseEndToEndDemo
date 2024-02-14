@@ -5,6 +5,10 @@
 			"query": "// Create Table \n.create table ObservationsTable (Observation_id: guid, resourceType: string, issued: datetime, status: string, patient_id_reference: guid, encounter_id_reference: guid, effectiveDateTime: datetime , valueQuantity_code: string, valueQuantity_system: string, valueQuantity_unit: string, valueQuantity_value: real, valueString: string)",
 			"metadata": {
 				"language": "kql"
+			},
+			"currentConnection": {
+				"poolName": "adxpoolhealthcare",
+				"databaseName": "ObservationData"
 			}
 		},
 		"type": "KqlQuery"
